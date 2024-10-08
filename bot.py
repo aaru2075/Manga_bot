@@ -163,7 +163,7 @@ async def on_private_message(client: Client, message: Message):
         logger.exception(e)
 
 
-@bot.on_message(filters=filters.command('start') & filters.user(ADMINS))
+@bot.on_message(filters.command('start') & filters.user(ADMINS))
 async def on_start(client: Client, message: Message):
     logger.info(f"User {message.from_user.id} started the bot")
     await message.reply("Welcome to the best manga pdf bot in telegram!!\n"
@@ -177,17 +177,17 @@ async def on_start(client: Client, message: Message):
     logger.info(f"User {message.from_user.id} finished the start command")
     
 
-@bot.on_message(filters=filters.command(['help']) & filters.user(ADMINS))
+@bot.on_message(filters.command('help') & filters.user(ADMINS))
 async def on_help(client: Client, message: Message):
     await message.reply(help_msg)
 
 
-@bot.on_message(filters=filters.command(['queue']) & filters.user(ADMINS))
+@bot.on_message(filters.command('queue') & filters.user(ADMINS))
 async def on_help(client: Client, message: Message):
     await message.reply(f'Queue size: {pdf_queue.qsize()}')
 
 
-@bot.on_message(filters=filters.command(['refresh']) & filters.user(ADMINS))
+@bot.on_message(filters.command('refresh') & filters.user(ADMINS))
 async def on_refresh(client: Client, message: Message):
     text = message.reply_to_message.text or message.reply_to_message.caption
     if text:
@@ -210,7 +210,7 @@ async def on_refresh(client: Client, message: Message):
     return await message.reply("File refreshed successfully!")
 
 
-@bot.on_message(filters=filters.command(['subs']) & filters.user(ADMINS))
+@bot.on_message(filters.command('subs') & filters.user(ADMINS))
 async def on_subs(client: Client, message: Message):
     db = DB()
 
@@ -234,7 +234,7 @@ async def on_subs(client: Client, message: Message):
     await message.reply(f'Your subscriptions:\n\n{text}\nTo see more subscriptions use `/subs filter`', disable_web_page_preview=True)
 
 
-@bot.on_message(filters=filters.regex(r'^/cancel ([^ ]+)$'))
+@bot.on_message(filters.regex(r'^/cancel ([^ ]+)$'))
 async def on_cancel_command(client: Client, message: Message):
     db = DB()
     sub = await db.get(Subscription, (message.matches[0].group(1), str(message.from_user.id)))
@@ -244,7 +244,7 @@ async def on_cancel_command(client: Client, message: Message):
     return await message.reply("You will no longer receive updates for that manga.")
 
 
-@bot.on_message(filters=filters.command(['options']) & filters.user(ADMINS))
+@bot.on_message(filters.command('options') & filters.user(ADMINS))
 async def on_options_command(client: Client, message: Message):
     db = DB()
     user_options = await db.get(MangaOutput, str(message.from_user.id))
@@ -253,7 +253,7 @@ async def on_options_command(client: Client, message: Message):
     return await message.reply("Select the desired output format.", reply_markup=buttons)
 
 
-@bot.on_message(filters=filters.command('add') & filters.user(ADMINS))
+@bot.on_message(filters.command('add') & filters.user(ADMINS))
 async def on_add(client: Client, message: Message):
     try:
         text = message.text.split(" ")[1]
@@ -268,7 +268,7 @@ async def on_unknown_command(client: Client, message: Message):
     await message.reply("Unknown command")
 
 
-@bot.on_message((filters=filters.text) & filters.user(ADMINS))
+@bot.on_message(filters.text & filters.user(ADMINS))
 async def on_message(client, message: Message):
     language_query[f"lang_None_{hash(message.text)}"] = (None, message.text)
     for language in plugin_dicts.keys():
