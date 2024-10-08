@@ -10,7 +10,7 @@ import json
 import pyrogram.errors
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, InputMediaDocument
 
-from config import env_vars, dbname
+from config import env_vars, dbname, ADMINS
 from img2cbz.core import fld2cbz
 from img2pdf.core import fld2pdf, fld2thumb
 from plugins import *
@@ -163,7 +163,7 @@ async def on_private_message(client: Client, message: Message):
         logger.exception(e)
 
 
-@bot.on_message(filters=filters.command(['start']))
+@bot.on_message(filters=filters.command('start') & filters.user(ADMINS))
 async def on_start(client: Client, message: Message):
     logger.info(f"User {message.from_user.id} started the bot")
     await message.reply("Welcome to the best manga pdf bot in telegram!!\n"
@@ -177,17 +177,17 @@ async def on_start(client: Client, message: Message):
     logger.info(f"User {message.from_user.id} finished the start command")
     
 
-@bot.on_message(filters=filters.command(['help']))
+@bot.on_message(filters=filters.command(['help']) & filters.user(ADMINS))
 async def on_help(client: Client, message: Message):
     await message.reply(help_msg)
 
 
-@bot.on_message(filters=filters.command(['queue']))
+@bot.on_message(filters=filters.command(['queue']) & filters.user(ADMINS))
 async def on_help(client: Client, message: Message):
     await message.reply(f'Queue size: {pdf_queue.qsize()}')
 
 
-@bot.on_message(filters=filters.command(['refresh']))
+@bot.on_message(filters=filters.command(['refresh']) & filters.user(ADMINS))
 async def on_refresh(client: Client, message: Message):
     text = message.reply_to_message.text or message.reply_to_message.caption
     if text:
@@ -210,7 +210,7 @@ async def on_refresh(client: Client, message: Message):
     return await message.reply("File refreshed successfully!")
 
 
-@bot.on_message(filters=filters.command(['subs']))
+@bot.on_message(filters=filters.command(['subs']) & filters.user(ADMINS))
 async def on_subs(client: Client, message: Message):
     db = DB()
 
@@ -244,7 +244,7 @@ async def on_cancel_command(client: Client, message: Message):
     return await message.reply("You will no longer receive updates for that manga.")
 
 
-@bot.on_message(filters=filters.command(['options']))
+@bot.on_message(filters=filters.command(['options']) & filters.user(ADMINS))
 async def on_options_command(client: Client, message: Message):
     db = DB()
     user_options = await db.get(MangaOutput, str(message.from_user.id))
@@ -253,12 +253,22 @@ async def on_options_command(client: Client, message: Message):
     return await message.reply("Select the desired output format.", reply_markup=buttons)
 
 
+@bot.on_message(filters=filters.command('add') & filters.user(ADMINS))
+async def on_add(client: Client, message: Message):
+    try:
+        text = message.text.split(" ")[1]
+        ADMINS.append(int(text))
+        await message.reply("User Added")
+        return await client.send_message(chat_id=(int(text)), text=" You Have Added")
+    except Exception as e:
+        return await message.reply(f"Format: /add `{user_id}` \n\nErrors Occurred:  {e}")
+        
 @bot.on_message(filters=filters.regex(r'^/'))
 async def on_unknown_command(client: Client, message: Message):
     await message.reply("Unknown command")
 
 
-@bot.on_message(filters=filters.text)
+@bot.on_message((filters=filters.text) & filters.user(ADMINS))
 async def on_message(client, message: Message):
     language_query[f"lang_None_{hash(message.text)}"] = (None, message.text)
     for language in plugin_dicts.keys():
