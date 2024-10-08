@@ -17,6 +17,7 @@ env_vars = {
   "FNAME": "[MC] [{chap_num}] {chap_name} @Manga_Campus"
 }
 
+ADMINS = []
 dbname = env_vars.get('DATABASE_URL_PRIMARY') or env_vars.get('DATABASE_URL') or 'sqlite:///test.db'
 
 if dbname.startswith('postgres://'):
